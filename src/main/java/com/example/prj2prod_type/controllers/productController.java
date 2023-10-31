@@ -5,10 +5,11 @@ import com.example.prj2prod_type.repository.RepositoryType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
-
+import java.util.HashSet; 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @CrossOrigin("localhost:3000")
@@ -20,20 +21,29 @@ public class productController {
     //creation d'un nouveau type
     @PostMapping("/create_type/{typeName}")
     public void createType(@RequestBody List<String> new_type, @PathVariable String typeName){
-        Type type=new Type();
+        // Utilisez un HashSet pour éliminer les doublons
+        Set<String> uniqueValues = new HashSet<>(new_type);
+
+       
+        List<String> uniqueList = new ArrayList<>(uniqueValues);
+
+        Type type = new Type();
         type.setNom(typeName);
         repositoryType.save(type);
-        String sql1="";
-        for (int i=0;i<new_type.size();i++){
-            if(i == new_type.size()-1) {
-                sql1 += new_type.get(i).toString() + " varchar(225) );";
-            }else{
-            sql1+=new_type.get(i).toString()+" varchar(225) , ";
+
+        String sql1 = "";
+        for (int i = 0; i < uniqueList.size(); i++) {
+            if (i == uniqueList.size() - 1) {
+                sql1 += uniqueList.get(i) + " varchar(225) );";
+            } else {
+                sql1 += uniqueList.get(i) + " varchar(225) , ";
             }
         }
-        String sql="Create Table"+" "+typeName+"( "+sql1;
+
+        String sql = "Create Table " + typeName + "( " + sql1;
         jdbcTemplate.execute(sql);
     }
+
     //Avoir tous les types
     @GetMapping("/get_type")
     public List<Type> getType(){
